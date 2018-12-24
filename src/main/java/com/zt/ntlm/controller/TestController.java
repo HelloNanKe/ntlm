@@ -8,6 +8,7 @@ import org.apache.http.impl.auth.NTLMEngineException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -21,7 +22,7 @@ import java.util.Map;
  * @Date: 2018/12/22 17:40
  */
 @Controller
-@RequestMapping(value = "/test")
+@RequestMapping(value = "")
 public class TestController {
 
     @Autowired
@@ -35,8 +36,8 @@ public class TestController {
 
     private String workStation = "192.168.1.175";
 
-    @RequestMapping(value = "/ntlm")
-    public void test(HttpServletResponse response, HttpServletRequest request){
+    @RequestMapping(value = "/test/ntlm")
+    public void test(HttpServletResponse response, HttpServletRequest request) {
         Map<String, String> headerMap = new HashMap<>();
         try {
             headerMap.put("Authorization", "Negotiate " + ntlmEngine.generateType1Msg(null, null));
@@ -55,26 +56,45 @@ public class TestController {
 //            NTLMEngineImpl.Type2Message type2Message = new NTLMEngineImpl.Type2Message(messageType2);
 //            byte[] challenge = type2Message.getChallenge();
 //            String challengeStr=new String(challenge);
-            messageType2=messageType2.substring(9,messageType2.length());
+            messageType2 = messageType2.substring(9, messageType2.length());
 
             String type3Message = ntlmEngine.generateType3Msg(userName, PWD, null, null, messageType2);
             System.out.println("type3Message=>" + type3Message);
 
             response.setCharacterEncoding("UTF-8");
             response.setHeader("Content-type", "text/html;charset=UTF-8");
-            response.addHeader("Authorization","Negotiate "+type3Message);
-            response.addHeader("Host","192.168.1.175");
-            PrintWriter out=response.getWriter();
-            response.sendRedirect("http://192.168.1.175/");
+            response.addHeader("Authorization", "Negotiate " + type3Message);
+            response.addHeader("Host", "192.168.1.175");
+            response.addHeader("Referer", "http://192.168.1.175");
+            PrintWriter out = response.getWriter();
+//            response.sendRedirect("http://192.168.1.175:8081/");
 //            out.write("<script>\n" +
-//                    "\tlocation.href='http://192.168.1.175';\n" +
+//                    "\tlocation.href='http://127.0.0.1:8081/';\n" +
 //                    "</script>");
-        } catch (NTLMEngineException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+            out.write("<button onclick=\"tiao()\">跳转</button>\n" +
+                    "<script>\n" +
+                    "    function tiao() {\n" +
+                    "        location.href=\"/index\";\n" +
+                    "    }\n" +
+                    "</script>");
+        } catch (Exception e) {
             e.printStackTrace();
         }
-
+//        return "ntlm.html";
     }
+
+    @RequestMapping(value = "/index")
+//    @ResponseBody
+    public void index(HttpServletRequest request,HttpServletResponse response) throws IOException {
+//        String header = request.getHeader("Authorization");
+//        System.err.println("header:"+header);
+//        return header;
+        response.setCharacterEncoding("UTF-8");
+        response.setHeader("Content-type", "text/html;charset=UTF-8");
+        PrintWriter out=response.getWriter();
+        out.write("南柯");
+        out.flush();
+    }
+
 
 }
